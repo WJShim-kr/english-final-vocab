@@ -51,3 +51,5 @@ input,select{border:1px solid var(--line);background:#fff;border-radius:12px;pad
 @media(max-width:520px){.quiz-top{grid-template-columns:1fr}.quiz-question{font-size:24px}.quiz-write{grid-template-columns:1fr}.quiz-actions{grid-template-columns:1fr}}
 .cloze-sentence{font-size:20px;font-weight:750;line-height:1.7;margin:10px 0 18px;word-break:keep-all}.cloze-sentence .blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--accent);color:var(--accent)}
 @media(max-width:520px){.app-tab{font-size:13px;padding:10px 6px}.cloze-sentence{font-size:18px;line-height:1.65}}
+
+.cloze-ko{margin:-6px 0 18px;padding:12px 14px;border-radius:12px;background:#f8f6fc;color:#5f5870;font-size:14px;line-height:1.65}.cloze-ko:empty{display:none}
