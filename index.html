@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>기말대비 휴대용 단어장</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+<header><h1>📚 기말대비 휴대용 단어장</h1>
+<div class="sub">교과서 2과 · 수특 28–30강 · <i>The Lottery</i> · 10월 모의고사<br>아는 단어 체크는 이 브라우저에 자동 저장됩니다.</div></header>
+
+<div class="app-tabs">
+<button class="app-tab active" id="tabVocab">단어장</button>
+<button class="app-tab" id="tabQuiz">퀴즈</button>
+</div>
+
+<div class="view" id="vocabView">
+<section class="panel stats">
+<div class="stat"><b id="totalN">0</b><span>현재 범위</span></div>
+<div class="stat"><b id="knownN">0</b><span>암기 완료</span></div>
+<div class="stat"><b id="leftN">0</b><span>남은 단어</span></div>
+</section>
+
+<section class="panel">
+<div class="source-picker"><label for="sourceSelect">범위 선택</label><select id="sourceSelect"></select></div>
+<div class="toolbar"><input id="search" placeholder="단어 또는 뜻 검색">
+<select id="mode"><option value="enko">영어 → 뜻</option><option value="koen">뜻 → 영어</option></select></div>
+<div class="controls" style="margin-top:8px">
+<button id="onlyUnknown">미암기만 보기</button><button id="shuffle">🔀 랜덤 섞기</button><button id="daily">오늘 20개</button><button id="toggleList">목록 보기</button>
+</div></section>
+
+<section class="panel">
+<div class="card" id="card"><div class="badge" id="badge"></div><div class="term" id="front"></div><div class="meaning" id="back" style="display:none"></div><div class="note" id="note"></div><div class="hint" id="hint">카드를 눌러 뜻을 확인하세요.</div></div>
+<div class="card-actions"><button class="bad" id="miss">× 아직 몰라요</button><button class="good" id="know">✓ 알아요</button></div>
+<div class="nav"><button id="prev">← 이전</button><button class="primary" id="flip">뒤집기</button><button id="next">다음 →</button></div>
+<div class="list" id="list"></div>
+</section>
+</div>
+
+<div class="view hidden" id="quizView">
+<section class="panel">
+  <div class="source-picker">
+    <label for="quizSource">퀴즈 범위</label>
+    <select id="quizSource"></select>
+  </div>
+  <div class="quiz-top">
+    <select id="quizType">
+      <option value="mixed">혼합 퀴즈</option>
+      <option value="enko">영어 → 뜻 객관식</option>
+      <option value="koen">뜻 → 영어 객관식</option>
+      <option value="spelling">뜻 → 영어 직접입력</option>
+    </select>
+    <select id="quizCount">
+      <option value="10">10문제</option>
+      <option value="20" selected>20문제</option>
+      <option value="30">30문제</option>
+      <option value="50">50문제</option>
+    </select>
+  </div>
+  <button class="primary" id="startQuiz" style="width:100%;margin-top:10px">퀴즈 시작</button>
+</section>
+
+<section class="panel quiz-box" id="quizPanel">
+  <div class="quiz-empty" id="quizIntro">
+    범위와 문제 유형을 고른 뒤 <b>퀴즈 시작</b>을 눌러주세요.<br>
+    객관식과 철자 입력을 섞어서 풀 수도 있어요.
+  </div>
+
+  <div id="quizPlay" style="display:none">
+    <div class="quiz-meta"><span id="quizCounter">1 / 20</span><span id="quizScoreNow">0점</span></div>
+    <div class="quiz-progress"><div id="quizBar"></div></div>
+    <div class="quiz-source" id="quizBadge"></div>
+    <div class="quiz-prompt" id="quizPrompt"></div>
+    <div class="quiz-question" id="quizQuestion"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-write" id="quizWrite" style="display:none">
+      <input id="quizInput" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="영어 단어/표현을 입력하세요">
+      <button class="primary" id="submitQuiz">정답 확인</button>
+    </div>
+    <div class="quiz-feedback" id="quizFeedback"></div>
+    <button class="primary quiz-next" id="nextQuiz">다음 문제 →</button>
+  </div>
+
+  <div id="quizResult" style="display:none"></div>
+</section>
+</div>
+
+<footer>현재 앱에는 사용자가 보내준 실제 자료에서 확인 가능한 범위를 넣었습니다.
+<strong>10월 모의고사 21·22·23·24·29·30·31·32·33·34·36·37·38·39·40번도 추가했습니다.</strong>
+검색창에 ‘21번’처럼 입력하면 해당 문항 단어만 빠르게 찾을 수 있습니다.</footer>
+</div>
+<script src="data-textbook2.js"></script>
+<script src="data-ebs28.js"></script>
+<script src="data-ebs29.js"></script>
+<script src="data-ebs30.js"></script>
+<script src="data-lottery.js"></script>
+<script src="data-mock_oct.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
