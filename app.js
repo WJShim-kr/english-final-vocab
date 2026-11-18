@@ -29,7 +29,17 @@ $("#daily").onclick=()=>{state.deck=shuffle(filtered()).slice(0,20);state.daily=
 $("#toggleList").onclick=e=>{$("#list").classList.toggle("open");e.target.textContent=$("#list").classList.contains("open")?"목록 닫기":"목록 보기";};
 
 const quizState={source:"전체",type:"mixed",count:20,questions:[],idx:0,score:0,wrong:[],answered:false};
-function setAppTab(tab){const isQuiz=tab==="quiz";$("#vocabView").classList.toggle("hidden",isQuiz);$("#quizView").classList.toggle("hidden",!isQuiz);$("#tabVocab").classList.toggle("active",!isQuiz);$("#tabQuiz").classList.toggle("active",isQuiz);if(isQuiz)populateQuizSources();}
+function setAppTab(tab){
+  const isVocab=tab==="vocab", isQuiz=tab==="quiz", isCloze=tab==="cloze";
+  $("#vocabView").classList.toggle("hidden",!isVocab);
+  $("#quizView").classList.toggle("hidden",!isQuiz);
+  $("#clozeView").classList.toggle("hidden",!isCloze);
+  $("#tabVocab").classList.toggle("active",isVocab);
+  $("#tabQuiz").classList.toggle("active",isQuiz);
+  $("#tabCloze").classList.toggle("active",isCloze);
+  if(isQuiz) populateQuizSources();
+  if(isCloze) populateClozeSources();
+}
 function populateQuizSources(){const sel=$("#quizSource");const prev=sel.value||quizState.source||"전체";sel.innerHTML="";ALL_SOURCES.forEach(s=>{const o=document.createElement("option");o.value=s;o.textContent=`${s} (${sourceCount(s)})`;if(s===prev)o.selected=true;sel.appendChild(o);});quizState.source=sel.value||"전체";}
 function quizPool(){return WORDS.filter(w=>quizState.source==="전체"||w.source===quizState.source);}
 function uniqBy(arr,fn){const seen=new Set(),out=[];for(const x of arr){const k=fn(x);if(!seen.has(k)){seen.add(k);out.push(x);}}return out;}
@@ -47,10 +57,96 @@ function nextQuizQuestion(){quizState.idx++;$("#quizInput").disabled=false;$("#s
 function showQuizResult(){const total=quizState.questions.length;const pct=total?Math.round(quizState.score/total*100):0;$("#quizPlay").style.display="none";$("#quizResult").style.display="block";const wrongUnique=uniqBy(quizState.wrong,key);$("#quizResult").innerHTML=`<div class="quiz-result"><div style="font-weight:800">퀴즈 완료</div><div class="quiz-score">${quizState.score} / ${total}</div><div style="color:var(--muted)">정답률 ${pct}% · 오답 ${wrongUnique.length}개</div></div>${wrongUnique.length?`<div class="quiz-wrong-list">${wrongUnique.map(w=>`<div class="quiz-wrong-row"><b>${esc(w.term)}</b>${esc(w.meaning)}<div class="src">${esc(w.source)}${w.section?" · "+esc(w.section):""}</div></div>`).join("")}</div>`:""}<div class="quiz-actions"><button id="retryWrong" ${wrongUnique.length?"":"disabled"}>오답만 다시</button><button class="primary" id="retryFresh">새 퀴즈</button></div>`;$("#quizBar").style.width="100%";const rw=$("#retryWrong");if(rw&&!rw.disabled)rw.onclick=()=>startQuizWith(wrongUnique);$("#retryFresh").onclick=startFreshQuiz;}
 $("#tabVocab").onclick=()=>setAppTab("vocab");
 $("#tabQuiz").onclick=()=>setAppTab("quiz");
+$("#tabCloze").onclick=()=>setAppTab("cloze");
 $("#quizSource").onchange=e=>{quizState.source=e.target.value;};
 $("#startQuiz").onclick=startFreshQuiz;
 $("#submitQuiz").onclick=answerTyping;
 $("#quizInput").addEventListener("keydown",e=>{if(e.key==="Enter")answerTyping();});
 $("#nextQuiz").onclick=nextQuizQuestion;
+
+const CLOZE=window.CLOZE||[];
+const CLOZE_SOURCES=["전체","교과서 2과","수특 28강","수특 29강","수특 30강","The Lottery","10월 모의고사"];
+const clozeState={source:"전체",questions:[],idx:0,score:0,wrong:[],answered:false};
+
+function clozeSourceCount(s){return s==="전체"?CLOZE.length:CLOZE.filter(q=>q.source===s).length;}
+function populateClozeSources(){
+  const sel=$("#clozeSource"); const prev=sel.value||clozeState.source||"전체";
+  sel.innerHTML="";
+  CLOZE_SOURCES.filter(s=>clozeSourceCount(s)>0).forEach(s=>{
+    const o=document.createElement("option"); o.value=s; o.textContent=`${s} (${clozeSourceCount(s)})`;
+    if(s===prev)o.selected=true; sel.appendChild(o);
+  });
+  clozeState.source=sel.value||"전체";
+}
+function clozePool(){return CLOZE.filter(q=>clozeState.source==="전체"||q.source===clozeState.source);}
+function normalizeCloze(s){return (s||"").toLowerCase().trim().replace(/[’‘]/g,"'").replace(/[.,!?;:“”"]/g,"").replace(/\s+/g," ");}
+function startClozeWith(items){
+  const requested=Number($("#clozeCount").value)||10;
+  const n=requested===999?items.length:Math.min(requested,items.length);
+  clozeState.questions=shuffle(items).slice(0,n);
+  clozeState.idx=0; clozeState.score=0; clozeState.wrong=[]; clozeState.answered=false;
+  $("#clozeIntro").style.display="none"; $("#clozeResult").style.display="none"; $("#clozePlay").style.display="block";
+  renderCloze();
+}
+function startCloze(){
+  clozeState.source=$("#clozeSource").value;
+  const pool=clozePool();
+  if(!pool.length){$("#clozeIntro").textContent="이 범위에는 아직 빈칸 문제가 없어요.";return;}
+  startClozeWith(pool);
+}
+function renderCloze(){
+  const total=clozeState.questions.length;
+  if(clozeState.idx>=total){showClozeResult();return;}
+  const q=clozeState.questions[clozeState.idx];
+  clozeState.answered=false;
+  $("#clozeCounter").textContent=`${clozeState.idx+1} / ${total}`;
+  $("#clozeScoreNow").textContent=`${clozeState.score}점`;
+  $("#clozeBar").style.width=`${(clozeState.idx/total)*100}%`;
+  $("#clozeBadge").textContent=`${q.source} · ${q.section}`;
+  $("#clozePrompt").textContent=q.prompt;
+  $("#clozeInput").value=""; $("#clozeInput").disabled=false; $("#submitCloze").disabled=false;
+  $("#clozeFeedback").className="quiz-feedback"; $("#clozeFeedback").innerHTML="";
+  $("#nextCloze").style.display="none";
+  setTimeout(()=>$("#clozeInput").focus(),50);
+}
+function answerCloze(){
+  if(clozeState.answered)return;
+  const typed=$("#clozeInput").value;
+  if(!typed.trim())return;
+  const q=clozeState.questions[clozeState.idx];
+  const ok=normalizeCloze(typed)===normalizeCloze(q.answer);
+  clozeState.answered=true;
+  if(ok) clozeState.score++; else clozeState.wrong.push(q);
+  $("#clozeInput").disabled=true; $("#submitCloze").disabled=true;
+  const fb=$("#clozeFeedback");
+  fb.className="quiz-feedback show "+(ok?"goodfb":"badfb");
+  fb.innerHTML=ok
+    ? `✓ 맞았어요! <b>${esc(q.answer)}</b><br><span style="color:var(--muted)">${esc(q.full)}</span>`
+    : `정답: <b>${esc(q.answer)}</b><br><span style="color:var(--muted)">원문: ${esc(q.full)}</span><br><span style="font-size:12px">입력: ${esc(typed)}</span>`;
+  $("#clozeScoreNow").textContent=`${clozeState.score}점`;
+  $("#nextCloze").style.display="block";
+}
+function nextCloze(){
+  clozeState.idx++;
+  renderCloze();
+}
+function showClozeResult(){
+  const total=clozeState.questions.length;
+  const wrong=uniqBy(clozeState.wrong,q=>q.source+"||"+q.section+"||"+q.prompt);
+  const pct=total?Math.round(clozeState.score/total*100):0;
+  $("#clozePlay").style.display="none"; $("#clozeResult").style.display="block";
+  $("#clozeResult").innerHTML=`<div class="quiz-result"><div style="font-weight:800">본문 빈칸 완료</div><div class="quiz-score">${clozeState.score} / ${total}</div><div style="color:var(--muted)">정답률 ${pct}% · 오답 ${wrong.length}개</div></div>
+  ${wrong.length?`<div class="quiz-wrong-list">${wrong.map(q=>`<div class="quiz-wrong-row"><b>${esc(q.answer)}</b>${esc(q.prompt)}<div class="src">${esc(q.source)} · ${esc(q.section)}</div></div>`).join("")}</div>`:""}
+  <div class="quiz-actions"><button id="retryClozeWrong" ${wrong.length?"":"disabled"}>오답만 다시</button><button class="primary" id="retryClozeFresh">새 빈칸 퀴즈</button></div>`;
+  const rw=$("#retryClozeWrong"); if(rw&&!rw.disabled)rw.onclick=()=>startClozeWith(wrong);
+  $("#retryClozeFresh").onclick=startCloze;
+}
+$("#clozeSource").onchange=e=>{clozeState.source=e.target.value;};
+$("#startCloze").onclick=startCloze;
+$("#submitCloze").onclick=answerCloze;
+$("#clozeInput").addEventListener("keydown",e=>{if(e.key==="Enter")answerCloze();});
+$("#nextCloze").onclick=nextCloze;
+
 populateQuizSources();
+populateClozeSources();
 buildFilters();refresh();
