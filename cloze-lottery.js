@@ -1,0 +1,1 @@
+window.CLOZE=(window.CLOZE||[]).concat([{"source":"The Lottery","section":"Page 1","prompt":"Bobby Martin had already stuffed his pockets full of ______, and the other boys soon followed his example.","answer":"stones","full":"Bobby Martin had already stuffed his pockets full of stones, and the other boys soon followed his example."}]);
