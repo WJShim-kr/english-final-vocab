@@ -65,6 +65,7 @@ $("#quizInput").addEventListener("keydown",e=>{if(e.key==="Enter")answerTyping()
 $("#nextQuiz").onclick=nextQuizQuestion;
 
 const CLOZE=window.CLOZE||[];
+const CLOZE_KO=window.CLOZE_KO||{};
 const CLOZE_SOURCES=["전체","교과서 2과","수특 28강","수특 29강","수특 30강","The Lottery","10월 모의고사"];
 const clozeState={source:"전체",questions:[],idx:0,score:0,wrong:[],answered:false};
 
@@ -104,6 +105,8 @@ function renderCloze(){
   $("#clozeBar").style.width=`${(clozeState.idx/total)*100}%`;
   $("#clozeBadge").textContent=`${q.source} · ${q.section}`;
   $("#clozePrompt").textContent=q.prompt;
+  const koKey=q.source+"||"+q.section+"||"+q.answer;
+  $("#clozeKo").textContent=CLOZE_KO[koKey]||"";
   $("#clozeInput").value=""; $("#clozeInput").disabled=false; $("#submitCloze").disabled=false;
   $("#clozeFeedback").className="quiz-feedback"; $("#clozeFeedback").innerHTML="";
   $("#nextCloze").style.display="none";
